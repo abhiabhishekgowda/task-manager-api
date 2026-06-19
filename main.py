@@ -26,7 +26,7 @@ def view_task(id: int):
 @app.post("/task")
 def create_task(id: int, title: str):
     task_db.append({"id": id, "title": title})
-    return {"message": "task created successfully"}
+    return {"message": "task added successfully", "tasks": task_db}
     
 
 
