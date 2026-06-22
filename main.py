@@ -1,68 +1,66 @@
 from fastapi import FastAPI
-
+from typing import Optional
 
 app = FastAPI()
 
+# 1) OUR INITIAL DATABASE (Fixed the "complete" typo to "completed"!)
 task_db = [
-    {"id": 1, "title": "study fastapi", "complete": False},
-    {"id": 2, "title": "solve leetcode", "complete": False}
+    {"id": 1, "title": "study fastapi", "completed": False},
+    {"id": 2, "title": "solve leetcode", "completed": False}
 ]
 
-# 1) --------- VIEW HOME PAGE -------   
+# 2) VIEW HOME PAGE
 @app.get("/")
 def home():
-    return {"message": "welcom to your task manager"}
+    return {"message": "Welcome to your task manager!"}
 
-# 2) --------- VIEW ALL TAKS --------
+# 3) VIEW ALL TASKS (Unified path: GET /tasks)
 @app.get("/tasks")
 def view_all_tasks():
     return {"tasks": task_db}
 
-# 3) --------- SEARCH TSAKS ---------
-@app.get("/task/{id}")
+# 4) SEARCH SINGLE TASK (Unified path layout: GET /tasks/{id})
+@app.get("/tasks/{id}")
 def view_task(id: int):
     for task in task_db:
         if task["id"] == id:
             return {"task": task}
     return {"message": "Task not found"}
 
-# 4) ---------- CRAETE TASK ---------
+# 5) CREATE NEW TASK (Unified path layout: POST /tasks)
 @app.post("/tasks")
 def create_task(id: int, title: str):
-    new_task = {
-        "id": id,
-        "title": title,
-        "completed": False
-    }
+    for task in task_db:
+        if task["id"] == id:
+            return {"message": "Task with this ID already exists!"}
+    new_task = {"id": id, "title": title, "completed": False}
     task_db.append(new_task)
-    return{
-        "message": "Task added succeefully",
-        "tasks": task_db
-    }
-# 5) ---------- UPDATE TASK ----------
+    return {"message": "Task created successfully", "task": new_task}
+    
+
+# 6) UPDATE TASK (Smart Partial Updates!)
 @app.put("/tasks/{task_id}")
-def update_task(task_id: int, completed: bool, title: str):
+def update_task(task_id: int, title: Optional[str] = None, completed: Optional[bool] = None):
     for task in task_db:
         if task["id"] == task_id:
-            task["completed"] = completed
-            task["title"] = title
-            return {
-                "message": "Task updated successfully",
-                "task": task
-            }
+            # If the user provided a new title, change it. Otherwise, keep the old one!
+            if title is not None:
+                task["title"] = title
+            
+            # If the user provided a new status, change it. Otherwise, keep the old one!
+            if completed is not None:
+                task["completed"] = completed
+                
+            return {"message": "Task updated successfully", "task": task}
+            
     return {"message": "Task not found"}
 
-
-# 6) ---------- DELETE TASK ---------- 
-
-@app.delete("/task/{id}")
+# 7) DELETE TASK (Unified path layout: DELETE /tasks/{id})
+@app.delete("/tasks/{id}")
 def delete_task(id: int):
-
     for task in task_db:
         if task["id"] == id:
             task_db.remove(task)
-            return {
-                "message": "Task deleted successfully",
-                "tasks": task_db
-            }
+            return {"message": "Task deleted successfully", "tasks": task_db}
     return {"message": "Task not found"}
+
