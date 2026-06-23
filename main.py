@@ -1,66 +1,90 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from typing import Optional
+import json
+import os
 
 app = FastAPI()
 
-# 1) OUR INITIAL DATABASE (Fixed the "complete" typo to "completed"!)
-task_db = [
-    {"id": 1, "title": "study fastapi", "completed": False},
-    {"id": 2, "title": "solve leetcode", "completed": False}
-]
+FILE_PATH = "tasks.json"
 
-# 2) VIEW HOME PAGE
+# Helper Function 1: Load data from the hard drive JSON file
+def load_tasks():
+    if not os.path.exists(FILE_PATH):
+        return []  # Return empty list if file doesn't exist yet
+    try:
+        with open(FILE_PATH, "r") as file:
+            return json.load(file)
+    except json.JSONDecodeError:
+        return []  # Return empty list if file gets corrupted
+
+# Helper Function 2: Save data onto the hard drive JSON file
+def save_tasks(tasks):
+    with open(FILE_PATH, "w") as file:
+        json.dump(tasks, file, indent=4)
+
+# 1) VIEW HOME PAGE
 @app.get("/")
 def home():
-    return {"message": "Welcome to your task manager!"}
+    return {"message": "Welcome to your permanent JSON task manager!"}
 
-# 3) VIEW ALL TASKS (Unified path: GET /tasks)
+# 2) VIEW ALL TASKS
 @app.get("/tasks")
 def view_all_tasks():
-    return {"tasks": task_db}
+    tasks_db = load_tasks()
+    return {"tasks": tasks_db}
 
-# 4) SEARCH SINGLE TASK (Unified path layout: GET /tasks/{id})
+# 3) SEARCH SINGLE TASK
 @app.get("/tasks/{id}")
 def view_task(id: int):
-    for task in task_db:
+    tasks_db = load_tasks()
+    for task in tasks_db:
         if task["id"] == id:
             return {"task": task}
-    return {"message": "Task not found"}
+    raise HTTPException(status_code=404, detail="Task not found")
 
-# 5) CREATE NEW TASK (Unified path layout: POST /tasks)
+# 4) CREATE NEW TASK (With ID Duplicate Prevention Check!)
 @app.post("/tasks")
 def create_task(id: int, title: str):
-    for task in task_db:
-        if task["id"] == id:
-            return {"message": "Task with this ID already exists!"}
-    new_task = {"id": id, "title": title, "completed": False}
-    task_db.append(new_task)
-    return {"message": "Task created successfully", "task": new_task}
+    tasks_db = load_tasks()
     
+    # Block duplicate IDs at the door
+    for task in tasks_db:
+        if task["id"] == id:
+            raise HTTPException(status_code=400, detail="This Task ID already exists!")
+            
+    new_task = {
+        "id": id,
+        "title": title,
+        "completed": False
+    }
+    tasks_db.append(new_task)
+    save_tasks(tasks_db)  # Permanent save!
+    return {"message": "Task added successfully", "tasks": tasks_db}
 
-# 6) UPDATE TASK (Smart Partial Updates!)
+# 5) UPDATE TASK (Smart Partial Updates!)
 @app.put("/tasks/{task_id}")
 def update_task(task_id: int, title: Optional[str] = None, completed: Optional[bool] = None):
-    for task in task_db:
+    tasks_db = load_tasks()
+    for task in tasks_db:
         if task["id"] == task_id:
-            # If the user provided a new title, change it. Otherwise, keep the old one!
             if title is not None:
                 task["title"] = title
-            
-            # If the user provided a new status, change it. Otherwise, keep the old one!
             if completed is not None:
                 task["completed"] = completed
                 
+            save_tasks(tasks_db)  # Permanent save!
             return {"message": "Task updated successfully", "task": task}
             
-    return {"message": "Task not found"}
+    raise HTTPException(status_code=404, detail="Task not found")
 
-# 7) DELETE TASK (Unified path layout: DELETE /tasks/{id})
+# 6) DELETE TASK
 @app.delete("/tasks/{id}")
 def delete_task(id: int):
-    for task in task_db:
+    tasks_db = load_tasks()
+    for task in tasks_db:
         if task["id"] == id:
-            task_db.remove(task)
-            return {"message": "Task deleted successfully", "tasks": task_db}
-    return {"message": "Task not found"}
-
+            tasks_db.remove(task)
+            save_tasks(tasks_db)  # Permanent save!
+            return {"message": "Task deleted successfully", "tasks": tasks_db}
+            
+    raise HTTPException(status_code=404, detail="Task not found")
