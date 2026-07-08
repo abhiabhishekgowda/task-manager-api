@@ -22,4 +22,20 @@ def create_tasks(title: str, completed: bool = False):
     result = db.create_tasks(title, completed)
     return result
 
+# 5. Create a route to get a specific task by ID
+@app.get("/tasks/{id}")
+def get_task(id: int):
+    task = db.get_tasks(id)
+    return task
 
+# 6. Create a route to update a specific task by ID
+@app.put("/tasks/{id}")
+def update_task(id: int, title: str = None, completed: bool = None):
+    result = db.update_tasks(id, title, completed)
+    return result
+
+# 7. Create a route to delete a specific task by ID
+@app.delete("/tasks/{id}")
+def delete_task(id: int):
+    result = db.delete_tasks(id)
+    return result
