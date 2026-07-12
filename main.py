@@ -1,5 +1,4 @@
-from fastapi import FastAPI, HTTPException, status
-# 1. Import your working class from database.py
+from fastapi import FastAPI,HTTPException
 from database import TaskDatabase
 
 app = FastAPI()
@@ -10,49 +9,40 @@ db = TaskDatabase()
 def home():
     return {"message": "Welcome to TaskManager API."}
 
-# 3. Create a route to get all tasks
+# 3. Create a route to get all tasks and create a new task using the methods from TaskDatabase
 @app.get("/tasks")
 def get_all_tasks():
     tasks = db.get_all_tasks()
     return {"tasks": tasks}
 
-# 4. Create a route to create a new task (Status 201 Created!)
-@app.post("/tasks", status_code=status.HTTP_201_CREATED)
+# 4. Create a route to create a new task using the methods from TaskDatabase
+@app.post("/tasks",status_code=201)
 def create_tasks(title: str, completed: bool = False):
     result = db.create_tasks(title, completed)
-    return result
+    return result 
 
-# 5. Get a specific task by ID (With 404 safety trigger)
+# 5. Create a route to get a specific task by ID
 @app.get("/tasks/{id}")
 def get_task(id: int):
-    task = db.get_tasks(id)
-    # If the database returned our custom error dictionary, raise a real 404!
-    if isinstance(task, dict) and "message" in task:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, 
-            detail=task["message"]
-        )
-    return task
+    result = db.get_tasks(id)
+    if isinstance(result,dict) and "message" in result:
+        raise HTTPException(status_code=404,detail=result['message'])
+    return result
 
-# 6. Update a specific task by ID (With 404 safety trigger)
+# 6. Create a route to update a specific task by ID
 @app.put("/tasks/{id}")
 def update_task(id: int, title: str = None, completed: bool = None):
     result = db.update_tasks(id, title, completed)
-    if "No tasks found" in result.get("message", ""):
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, 
-            detail=result["message"]
-        )
+    if isinstance(result,dict) and "message" in result:
+        raise HTTPException(status_code=404,detail=result['message'])
     return result
 
-# 7. Delete a specific task by ID (With 404 safety trigger)
+# 7. Create a route to delete a specific task by ID
 @app.delete("/tasks/{id}")
 def delete_task(id: int):
     result = db.delete_tasks(id)
-    if "No tasks found" in result.get("message", ""):
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, 
-            detail=result["message"]
-        )
-    return result   
+    if isinstance(result,dict) and "message" in result:
+        raise HTTPException(status_code=404,detail=result['message'])
+    return result
 
+    
