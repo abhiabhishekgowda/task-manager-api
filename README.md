@@ -1,70 +1,64 @@
-# Task Manager API
+# 📝 Task Manager API
 
-A backend project built with FastAPI to learn API development, CRUD operations, and database integration.
+A backend Task Manager API built with **Python, FastAPI, and SQLite**.
 
-## Project Goal
+## 🚀 Features
 
-Build a complete Task Manager API that allows users to:
+* Create a task
+* View all tasks
+* Search task by ID
+* Update a task
+* Delete a task
+* Store data permanently using SQLite
 
-* Create Tasks
-* View Tasks
-* Update Tasks
-* Delete Tasks
-* Store Data Permanently
-* Work with a Database
-
-## Features Completed
-
-### Week 1
-
-* FastAPI Setup
-* Uvicorn Server Setup
-* GET Endpoints
-* POST Endpoints
-* PUT Endpoints
-* DELETE Endpoints
-* Path Parameters
-* JSON Responses
-* In-Memory Task Storage Using Python Lists
-
-## Example Task Structure
-
-```json
-{
-    "id": 1,
-    "title": "Study FastAPI",
-    "completed": false
-}
-```
-
-## Current Tech Stack
+## 🛠 Tech Stack
 
 * Python
 * FastAPI
+* SQLite
 * Uvicorn
 
-## Current API Endpoints
+## 📂 Project Structure
 
-| Method | Endpoint    | Description      |
-| ------ | ----------- | ---------------- |
-| GET    | /           | Home Route       |
-| GET    | /tasks      | View All Tasks   |
-| GET    | /tasks/{id} | View Single Task |
-| POST   | /tasks      | Create Task      |
-| PUT    | /tasks/{id} | Update Task      |
-| DELETE | /tasks/{id} | Delete Task      |
+```text
+main.py
+database.py
+tasks.db
+```
 
-## Upcoming Features (Week 2)
+## 📚 What I Learned
 
-* SQLite Database
-* Database CRUD Operations
-* Persistent Data Storage
-* SQL Basics
-* Python OOP Basics
+* FastAPI basics
+* REST API (CRUD)
+* SQLite database
+* SQL (INSERT, SELECT, UPDATE, DELETE)
+* Python OOP
+* Database integration with FastAPI
+* Repository pattern (basic)
 
-## Learning Journey
+## ▶️ Run the Project
 
-This project is part of my backend engineering learning roadmap. The goal is to build strong backend fundamentals before moving into advanced software engineering and AI systems.
+1. Install dependencies
+2. Run:
+
+```bash
+uvicorn main:app --reload
+```
+
+3. Open:
+
+```
+http://127.0.0.1:8000/docs
+```
+
+## 🎯 Future Improvements
+
+* Multiple tables (Users & Tasks)
+* Pydantic validation
+* Better project structure
+* Basic authentication
+* Simple HTML/CSS frontend
+
 
 ## Author
 
