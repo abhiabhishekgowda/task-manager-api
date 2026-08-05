@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from database import TasksDatabase
-
+from schemas import TaskCreate
 app = FastAPI()
 db = TasksDatabase()
 
@@ -13,8 +13,8 @@ def view_all_tasks():
     return {"tasks": db.get_all_tasks()}
 
 @app.post("/tasks")
-def create_task(title: str, completed: bool = False):
-    return db.create_task(title, completed)
+def create_task(task: TaskCreate):
+    return db.create_task(task.title, task.completed)
 
 @app.get("/tasks/{task_id}")
 def view_task(task_id: int):
