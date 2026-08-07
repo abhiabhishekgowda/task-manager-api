@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from database import TasksDatabase
-from schemas import TaskCreate
+from schemas import TaskCreate, TaskResponse, TaskDelete, TaskUpdate
 app = FastAPI()
 db = TasksDatabase()
 
@@ -13,7 +13,7 @@ def view_all_tasks():
     return {"tasks": db.get_all_tasks()}
 
 @app.post("/tasks")
-def create_task(task: TaskCreate):
+def create_task(task: TaskCreate) -> TaskResponse:
     return db.create_task(task.title, task.completed)
 
 @app.get("/tasks/{task_id}")
