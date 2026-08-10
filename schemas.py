@@ -1,7 +1,9 @@
-from pydantic import BaseModel
+from pydantic import BaseModel,Field
 from typing import Optional
+
 class TaskCreate(BaseModel):
-    title: str
+    title: str = Field(min_length=3,max_length=50,
+    description="the title of the tast")
     completed: bool = False
 
 class TaskResponse(BaseModel):
@@ -10,10 +12,11 @@ class TaskResponse(BaseModel):
     completed: bool
 
 class TaskUpdate(BaseModel):
-    id: int
-    title: str = None
-    completed: bool = None
+    title: Optional[str] = Field(
+        default=None,
+        min_length=3,
+        max_length=50,
+        description="the title of the task",
+    )
+    completed: Optional[bool] = None
 
-class TaskDelete(BaseModel):
-    id: int
-    
