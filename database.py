@@ -13,11 +13,39 @@ class DatabaseConnection:
         if self.conn:
             self.conn.close()
 
+
 class TasksDatabase:
     def __init__(self, db_name="Tasks.db"):
         self.db_name = db_name
         self.create_table()
+        self.create_user_table()
 
+    def create_user_table(self):
+        """Create users table if it doesn't exist."""
+        with DatabaseConnection(self.db_name) as conn:
+            cursor = conn.cursor()
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS users(
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    username TEXT NOT NULL UNIQUE,
+                    password TEXT NOT NULL
+                )
+            """)
+            conn.commit()
+
+    def create_user(self, username: str, password: str):
+        """Create a new user."""
+        with DatabaseConnection(self.db_name) as conn:
+            cursor = conn.cursor()
+            cursor.execute(
+                "INSERT INTO users (username, password) VALUES (?, ?)",
+                (username, password)
+            )
+            conn.commit()
+            return {
+                "id": cursor.lastrowid,
+                "username": username
+            }
     def create_table(self):
         """Create tasks table if it doesn't exist."""
         with DatabaseConnection(self.db_name) as conn:
@@ -31,20 +59,21 @@ class TasksDatabase:
             """)
             conn.commit()
         
-    def create_task(self, title: str, completed: bool = False):
+    def create_task(self, title: str, user_id: int, completed: bool = False):
 
         with DatabaseConnection(self.db_name) as conn:
             cursor = conn.cursor()
 
             cursor.execute(
-                "INSERT INTO tasks (title, completed) VALUES (?, ?)",
-                (title, int(completed))
+                "INSERT INTO tasks (title, user_id, completed) VALUES (?, ?, ?)",
+                (title, user_id, int(completed))
             )
 
             conn.commit()
             return{
                 "id": cursor.lastrowid,
                 "title": title,
+                "user_id": user_id,
                 "completed": completed
             }
     
@@ -100,4 +129,32 @@ class TasksDatabase:
             conn.commit()
             return {"message": f"Task {task_id} deleted successfully."}
 
-   
+    def get_user(self, user_id: int):
+        """Fetch a single user by ID."""
+        with DatabaseConnection(self.db_name) as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT * FROM tasks WHERE user_id = ?", (user_id,))
+            row = cursor.fetchone()
+            if row is None:
+                return {"message": f"No tasks found for user with id {user_id}"}
+            return row
+    def get_tasks_by_users(self,user_id: int):
+        """Fetch all users."""
+        with DatabaseConnection(self.db_name) as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT * FROM tasks WHERE user_id = ?",(user_id,))
+            rows = cursor.fetchall()
+            if not rows:
+                return {"message": "No users exist yet."}
+            return [{
+                "id": row[0],
+                "title": row[1],
+                "completed": bool(row[2]),
+                "user_id": row[2]
+            }
+            for row in rows]
+
+            
+db = TasksDatabase()
+task = db.get_tasks_by_users(1)
+print(task)
