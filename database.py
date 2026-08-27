@@ -1,5 +1,12 @@
 import sqlite3
+from typing import Generator
 
+def get_db() -> Generator[TaskDatabase, None, None]:
+    db = TaskDatabase("tasks.db")
+    try:
+        yield db
+    finally:
+        pass
 
 class DatabaseConnection:
 
