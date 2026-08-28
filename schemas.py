@@ -3,8 +3,9 @@ from typing import Optional
 
 class TaskCreate(BaseModel):
     title: str = Field(min_length=3,max_length=50,
-    description="the title of the tast")
+    description="the title of the task")
     completed: bool = False
+
 
 class TaskResponse(BaseModel):
     id: int
@@ -20,3 +21,6 @@ class TaskUpdate(BaseModel):
     )
     completed: Optional[bool] = None
 
+class DeleteTaskResponse(BaseModel):
+    message: str
+    task_id: int

@@ -1,6 +1,6 @@
 from fastapi import APIRouter,HTTPException,status,Query,Depends
 from database import TaskDatabase,get_db
-from schemas import TaskCreate,TaskResponse,TaskUpdate
+from schemas import TaskCreate,TaskResponse,TaskUpdate,DeleteTaskResponse
 
 router = APIRouter(
     prefix="/tasks",
@@ -23,7 +23,7 @@ def get_task(task_id: int,db: TaskDatabase = Depends(get_db)):
     return task
 
 @router.put("/{task_id}", response_model=TaskResponse)
-def update_task(task_id: int, task_data: TaskUpdate,db: TaskDatabase = Depends(TaskDatabase)):
+def update_task(task_id: int, task_data: TaskUpdate,db: TaskDatabase = Depends(get_db)):
     updated_task = db.update_task(
         task_id=task_id, 
         title=task_data.title, 
@@ -36,13 +36,22 @@ def update_task(task_id: int, task_data: TaskUpdate,db: TaskDatabase = Depends(T
         )
     return updated_task
 
-@router.delete("/{task_id}", status_code=status.HTTP_200_OK)
-def delete_task(task_id: int,db: TaskDatabase = Depends(get_db)):
+@router.delete(
+    "/{task_id}",
+    response_model=DeleteTaskResponse,
+    status_code=status.HTTP_200_OK
+)
+def delete_task(task_id: int, db: TaskDatabase = Depends(get_db)):
+
     deleted = db.delete_task(task_id)
+
     if not deleted:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, 
+            status_code=status.HTTP_404_NOT_FOUND,
             detail="Task not found"
         )
-    return {"message": "Task deleted successfully"}
 
+    return {
+        "message": "Task deleted successfully",
+        "task_id": task_id
+    }
