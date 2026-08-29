@@ -7,6 +7,8 @@ def get_db() -> Generator[TaskDatabase, None, None]:
         yield db
     finally:
         pass
+class DatabaseError(Exception):
+    pass
 
 class DatabaseConnection:
 
@@ -18,9 +20,16 @@ class DatabaseConnection:
         self.conn = sqlite3.connect(self.db_name)
         return self.conn
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        if self.conn:
-            self.conn.close()
+    def __exit__(self,exc_type,exc_val,exc_tb):
+        try:
+            if exc_type is not None:
+                self.conn.rollback()
+
+                if issubclass(exc_type,sqlite3.Error):
+                    raise DatabaseError("Databse operation failed") from exc_val
+        finally:
+            if self.conn:
+                self.conn.close()       
 
 
 class TaskDatabase:
